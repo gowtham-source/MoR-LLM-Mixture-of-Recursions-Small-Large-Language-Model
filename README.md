@@ -59,55 +59,37 @@ MoR implements two sophisticated routing mechanisms that determine how tokens pr
 
 In expert-choice routing, each recursion depth acts as an expert that selects its preferred top-k tokens. For $N_r$ recursion steps, we have $N_r$ experts, where Expert $r$ applies the $r^{th}$ recursion step.
 
-For each token $t$ at recursion step $r \in \{1, \dots, N_r\}$:
+At each recursion step $r$:
+1. The router computes a scalar score for each token $t$:
 
-1. **Score Computation**:
-   $$g_t^r = \mathcal{G}\left(\theta_r^\top \mathcal{H}_t^r\right)$$
-   
-   Where:
-   - $\mathcal{G}:$ Activation function (sigmoid/tanh)
-   - $\mathcal{H}_t^r \in \mathbb{R}^d:$ Hidden state at step $r$
-   - $\theta_r \in \mathbb{R}^d:$ Learnable parameters for step $r$
+   ![g_t^r = \mathcal{G}(\theta_r^\top \mathcal{H}_t^r)](https://render.githubusercontent.com/render/math?math=g_t%5Er%20%3D%20%5Cmathcal%7BG%7D%28%5Ctheta_r%5E%5Ctop%20%5Cmathcal%7BH%7D_t%5Er%29)
 
-2. **State Update Rule**:
-   $$\mathcal{H}_t^{r+1} = 
-   \begin{cases} 
-   g_t^r \cdot f\left(\mathcal{H}_t^r, \Phi'\right) + \mathcal{H}_t^r & \text{if } g_t^r > P_\beta(G^r) \\
-   \mathcal{H}_t^r & \text{otherwise}
-   \end{cases}$$
+   where $\mathcal{G}$ is an activation function (sigmoid/tanh) and $\mathcal{H}_t^r$ is the hidden state at step $r$.
 
-   Where:
-   - $P_\beta(G^r):$ $\beta$-percentile threshold of scores at step $r$
-   - $f(\cdot, \Phi'):$ Recursive transformation with parameters $\Phi'$
+2. The hidden state updates as:
 
-**Key Properties**:
-- **Adaptive Computation**: Tokens dynamically progress based on complexity
-- **Hierarchical Gating**: Strict progression through recursion depths
-- **Efficiency**: Only significant updates modify the hidden state
+   ![\mathcal{H}_t^{r+1} = \begin{cases} g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^r & \text{if } g_t^r > P_\beta(G^r) \\ \mathcal{H}_t^r & \text{otherwise} \end{cases}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D%20%5Cmathcal%7BH%7D_t%5E%7Br&plus;1%7D%20%3D%20%5Cbegin%7Bcases%7D%20g_t%5Er%20f%28%5Cmathcal%7BH%7D_t%5Er%2C%20%5CPhi%27%29%20&plus;%20%5Cmathcal%7BH%7D_t%5Er%20%26%20%5Ctext%7Bif%20%7D%20g_t%5Er%20%3E%20P_%5Cbeta%28G%5Er%29%20%5C%5C%20%5Cmathcal%7BH%7D_t%5Er%20%26%20%5Ctext%7Botherwise%7D%20%5Cend%7Bcases%7D)
 
----
+   Where $P_\beta(G^r)$ is the $\beta$-percentile threshold over all scores at step $r$.
+
+**Key Features:**
+- Hierarchical filtering: Tokens must be selected at step $r$ to progress to $r+1$
+- Simulates early-exit behavior
+- Prioritizes computation for demanding tokens
 
 #### 2.2 Token-Choice Routing
 
-For each token $t$ with initial state $\mathcal{H}_t^1$:
+Token-choice commits each token to a full sequence of recursion blocks from the start:
 
-1. **Expert Assignment**:
-   $$\begin{aligned}
-   g_t &= \mathcal{G}\left(\theta^\top \mathcal{H}_t^1\right) \\
-   i &= \arg\max_{j \in \{1,\dots,N_r\}} g_t^j
-   \end{aligned}$$
+1. The router computes expert scores using the initial hidden state:
 
-2. **Recursive Updates** for $r = 1$ to $N_r$:
-   $$\mathcal{H}_t^{r+1} = 
-   \begin{cases}
-   g_t^r \cdot f\left(\mathcal{H}_t^r, \Phi'\right) + \mathcal{H}_t^1 & \text{if } r = i \\
-   g_t^r \cdot f\left(\mathcal{H}_t^r, \Phi'\right) & \text{otherwise}
-   \end{cases}$$
+   ![g_t = \mathcal{G}(\theta_r^\top \mathcal{H}_t^1)](https://render.githubusercontent.com/render/math?math=g_t%20%3D%20%5Cmathcal%7BG%7D%28%5Ctheta_r%5E%5Ctop%20%5Cmathcal%7BH%7D_t%5E1%29)
 
-**Key Properties**:
-- **Early Commitment**: Computation path fixed at start
-- **Stable Training**: Deterministic expert selection
-- **Efficient Routing**: Single decision point per token
+   where $g_t^j$ is the score for expert $j \in \{1,...,N_r\}$
+
+2. The token is assigned to expert $i = \arg\max_j g_t^j$, applying $i$ recursive updates:
+
+   ![\mathcal{H}_t^{r+1} = \begin{cases} g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^1 & \text{if } r = i \\ g_t^r f(\mathcal{H}_t^r, \Phi') & \text{otherwise} \end{cases}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D%20%5Cmathcal%7BH%7D_t%5E%7Br&plus;1%7D%20%3D%20%5Cbegin%7Bcases%7D%20g_t%5Er%20f%28%5Cmathcal%7BH%7D_t%5Er%2C%20%5CPhi%27%29%20&plus;%20%5Cmathcal%7BH%7D_t%5E1%20%26%20%5Ctext%7Bif%20%7D%20r%20%3D%20i%20%5C%5C%20g_t%5Er%20f%28%5Cmathcal%7BH%7D_t%5Er%2C%20%5CPhi%27%29%20%26%20%5Ctext%7Botherwise%7D%20%5Cend%7Bcases%7D)
 
 **Key Features:**
 - Commits to computation path upfront
