@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![MoR Transformer Architecture](https://github.com/user/MOR-LLM/raw/main/docs/images/mor_architecture.png)
+![MoR Transformer Architecture](./images/architecture_diagram1.png)
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange)](https://pytorch.org/)
@@ -37,6 +37,8 @@ Unlike traditional transformers that use separate weights for each layer, MoR re
 
 The MoR architecture is built on three key innovations:
 
+![MoR Features](./images/mor-feats.png)
+
 ### 1. Recursive Parameter Sharing
 
 MoR recursively shares parameters across transformer layers using a configurable sharing strategy. The default strategy is **Middle-Cycle**, which provides optimal parameter efficiency.
@@ -66,7 +68,7 @@ At each recursion step $r$:
 
 2. The hidden state updates as:
 
-   ![\mathcal{H}_t^{r+1} = \begin{cases} g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^r & \text{if } g_t^r > P_\beta(G^r) \\ \mathcal{H}_t^r & \text{otherwise} \end{cases}](https://latex.codecogs.com/png.image?\bg_white\dpi{110}\mathcal{H}_t^{r+1}=\begin{cases}g_t^rf(\mathcal{H}_t^r,\Phi')+\mathcal{H}_t^r&\text{if}g_t^r>P_\beta(G^r)\\\mathcal{H}_t^r&\text{otherwise}\end{cases})
+   <img src="https://latex.codecogs.com/png.image?%5Cbg_white%20%5Cdpi%7B110%7D%20%5Cmathcal%7BH%7D_t%5E%7Br+1%7D%20%3D%20%5Cbegin%7Bcases%7D%20g_t%5Er%20f%28%5Cmathcal%7BH%7D_t%5Er%2C%20%5CPhi%27%29%20+%20%5Cmathcal%7BH%7D_t%5Er%20%26%20%5Ctext%7Bif%20%7D%20g_t%5Er%20%3E%20P_%5Cbeta%28G%5Er%29%20%5C%5C%20%5Cmathcal%7BH%7D_t%5Er%20%26%20%5Ctext%7Botherwise%7D%20%5Cend%7Bcases%7D" alt="Expert-Choice Routing Formula" width="500">
 
    Where $P_\beta(G^r)$ is the $\beta$-percentile threshold over all scores at step $r$.
 
