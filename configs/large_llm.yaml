@@ -1,0 +1,92 @@
+# MoR Large Language Model Configuration
+# Scaled for production LLM training with large datasets and multi-GPU setup
+
+model:
+  # Model Architecture - Scaled to 7B parameter range
+  vocab_size: 50257  # GPT-2 tokenizer (or use 32000 for Llama tokenizer)
+  hidden_size: 4096  # Increased from 512 (8x larger)
+  intermediate_size: 11008  # Increased from 2048 (5.4x larger, typical 2.7x hidden_size)
+  num_attention_heads: 32  # Increased from 8 (4x more heads)
+  num_key_value_heads: 32  # Same as attention heads for full attention
+  max_position_embeddings: 4096  # Increased context length from 2048
+  rms_norm_eps: 0.000001
+  rope_theta: 10000.0
+  
+  # MoR-specific parameters - Scaled for larger model
+  num_recursion_blocks: 32  # Increased from 4 (8x more layers)
+  parameter_sharing_strategy: "middle_cycle"  # Optimal for parameter efficiency
+  max_recursion_depth: 8  # Increased from 4 for more complex reasoning
+  min_recursion_depth: 2  # Minimum depth for efficiency
+  
+  # Routing configuration - Enhanced for larger scale
+  routing_strategy: "expert_choice"  # Expert-Choice routing for efficiency
+  router_type: "linear"  # Linear router as per paper
+  beta_percentile: 0.8  # β-percentile threshold
+  auxiliary_loss_weight: 0.01  # Routing auxiliary loss weight
+
+training:
+  # Training Configuration - Optimized for large-scale training
+  batch_size: 4  # Per-device batch size (total = batch_size * num_gpus * grad_accum)
+  gradient_accumulation_steps: 32  # Increased for effective batch size of 128+ per GPU
+  learning_rate: 0.0001  # Slightly lower for stability with large models
+  weight_decay: 0.1
+  warmup_steps: 10000  # Increased warmup for stability
+  max_steps: 500000  # Much longer training (vs 10k for small model)
+  save_steps: 5000  # Save checkpoints more frequently
+  eval_steps: 2500  # Evaluate more frequently
+  logging_steps: 100  # Log every 100 steps
+  
+  # Advanced Training Features
+  gradient_clipping: 1.0  # Gradient clipping for stability
+  use_mixed_precision: true  # Enable FP16/BF16 for memory efficiency
+  dataloader_num_workers: 8  # More workers for data loading
+  
+  # FSDP configuration for distributed training - ESSENTIAL for large models
+  use_fsdp: true  # MUST be true for large models
+  fsdp_sharding_strategy: "full_shard"  # Full parameter sharding
+  fsdp_backward_prefetch: "backward_pre"  # Optimize backward pass
+  fsdp_forward_prefetch: true  # Optimize forward pass
+  fsdp_use_orig_params: false  # Use FSDP-optimized parameters
+  
+  # Memory Optimization
+  gradient_checkpointing: true  # Trade compute for memory
+  cpu_offload: false  # Set to true if running out of GPU memory
+
+data:
+  # Large-Scale Dataset Configuration
+  dataset_name: "openwebtext"  # Large web text dataset (~40GB)
+  # Alternative large datasets:
+  # dataset_name: "c4"  # Common Crawl (800GB+)
+  # dataset_name: "redpajama-data-1t"  # 1.2T tokens
+  # dataset_name: "oscar"  # Multilingual web crawl
+  # dataset_name: "common-pile/arxiv_papers" # commonpile - arxiv papers
+  # dataset_name: "common-pile/pubmed" # commonpile - pubmed papers
+  # dataset_name: "common-pile/..." # To access all commonpile datasets refer  https://huggingface.co/collections/common-pile/common-pile-v01-68307d37df48e36f02717f21
+  
+  dataset_config: null
+  max_length: 4096  # Increased context length
+  preprocessing_num_workers: 16  # More workers for preprocessing
+  
+  # Data Streaming for Large Datasets
+  streaming: true  # Stream data instead of loading all into memory
+  buffer_size: 10000  # Buffer size for streaming
+
+inference:
+  # Inference Configuration
+  max_new_tokens: 512  # Longer generation capability
+  temperature: 0.7
+  top_p: 0.9
+  top_k: 50
+  do_sample: true
+  
+  # MoR-specific inference settings
+  recursion_strategy: "adaptive"  # Adaptive recursion depth
+  min_recursion_depth: 2
+  max_recursion_depth: 8
+
+# Hardware Requirements and Recommendations
+# Minimum: 4x A100 80GB or 8x A100 40GB
+# Recommended: 8x A100 80GB or 8x H100 80GB
+# Memory: ~320GB GPU memory for 7B model with FSDP
+# Storage: 1TB+ SSD for datasets and checkpoints
+# Network: High-bandwidth interconnect (InfiniBand recommended)

@@ -1,0 +1,79 @@
+# MoR Medium Language Model Configuration
+# Intermediate scaling - 1.3B parameters for multi-GPU training
+
+model:
+  # Model Architecture - Medium scale (1.3B parameters)
+  vocab_size: 50257
+  hidden_size: 2048  # 4x larger than small model
+  intermediate_size: 5504  # ~2.7x hidden_size
+  num_attention_heads: 16  # 2x more heads
+  num_key_value_heads: 16
+  max_position_embeddings: 2048  # Keep same context for now
+  rms_norm_eps: 0.000001
+  rope_theta: 10000.0
+  
+  # MoR-specific parameters - Medium scale
+  num_recursion_blocks: 16  # 4x more layers
+  parameter_sharing_strategy: "middle_cycle"
+  max_recursion_depth: 6  # Increased from 4
+  min_recursion_depth: 2
+  
+  # Routing configuration
+  routing_strategy: "expert_choice"
+  router_type: "linear"
+  beta_percentile: 0.8
+  auxiliary_loss_weight: 0.01
+
+training:
+  # Training Configuration - Medium scale
+  batch_size: 8  # Per-device batch size
+  gradient_accumulation_steps: 16  # Effective batch size: 128 per GPU
+  learning_rate: 0.0002  # Slightly lower for larger model
+  weight_decay: 0.1
+  warmup_steps: 5000
+  max_steps: 100000  # Longer training
+  save_steps: 2500
+  eval_steps: 1000
+  logging_steps: 50
+  
+  # Memory optimizations
+  gradient_clipping: 1.0
+  use_mixed_precision: true  # Enable for memory efficiency
+  dataloader_num_workers: 4
+  
+  # FSDP for multi-GPU training
+  use_fsdp: true  # Enable for medium+ models
+  fsdp_sharding_strategy: "full_shard"
+  fsdp_backward_prefetch: "backward_pre"
+  fsdp_forward_prefetch: true
+  
+  # Memory optimization
+  gradient_checkpointing: true  # Trade compute for memory
+
+data:
+  # Medium dataset - OpenWebText subset or full
+  dataset_name: "openwebtext"
+  dataset_config: null
+  max_length: 2048
+  preprocessing_num_workers: 8
+  
+  # Enable streaming for large datasets
+  streaming: true
+  buffer_size: 5000
+
+inference:
+  max_new_tokens: 256
+  temperature: 0.7
+  top_p: 0.9
+  top_k: 50
+  do_sample: true
+  
+  # MoR inference settings
+  recursion_strategy: "adaptive"
+  min_recursion_depth: 2
+  max_recursion_depth: 6
+
+# Hardware Requirements:
+# Minimum: 2x A100 40GB
+# Recommended: 4x A100 40GB or 2x A100 80GB
+# Training time: ~1 week on 4x A100

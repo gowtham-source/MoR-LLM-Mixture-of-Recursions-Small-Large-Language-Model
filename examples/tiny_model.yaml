@@ -1,0 +1,36 @@
+data:
+  dataset_config: wikitext-2-raw-v1
+  dataset_name: wikitext
+  max_length: 128
+  preprocessing_num_workers: 2
+inference:
+  do_sample: true
+  max_new_tokens: 50
+  temperature: 0.7
+  top_p: 0.9
+model:
+  auxiliary_loss_weight: 0.01
+  beta_percentile: 0.8
+  enable_kv_cache: true
+  hidden_size: 128
+  intermediate_size: 512
+  max_position_embeddings: 512
+  max_recursion_depth: 2
+  num_attention_heads: 4
+  num_key_value_heads: 4
+  num_recursion_blocks: 2
+  parameter_sharing_strategy: middle_cycle
+  router_type: linear
+  routing_strategy: expert_choice
+  vocab_size: 1000
+training:
+  batch_size: 2
+  eval_steps: 250
+  gradient_accumulation_steps: 2
+  learning_rate: 0.001
+  max_steps: 1000
+  save_steps: 500
+  use_fsdp: false
+  use_wandb: false
+  warmup_steps: 100
+  weight_decay: 0.1
