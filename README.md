@@ -66,7 +66,7 @@ At each recursion step $r$:
 
 2. The hidden state updates as:
 
-   ![\mathcal{H}_t^{r+1} = \begin{cases} g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^r & \text{if } g_t^r > P_\beta(G^r) \\ \mathcal{H}_t^r & \text{otherwise} \end{cases}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D%20%5Cmathcal%7BH%7D_t%5E%7Br&plus;1%7D%20%3D%20%5Cbegin%7Bcases%7D%20g_t%5Er%20f%28%5Cmathcal%7BH%7D_t%5Er%2C%20%5CPhi%27%29%20&plus;%20%5Cmathcal%7BH%7D_t%5Er%20%26%20%5Ctext%7Bif%20%7D%20g_t%5Er%20%3E%20P_%5Cbeta%28G%5Er%29%20%5C%5C%20%5Cmathcal%7BH%7D_t%5Er%20%26%20%5Ctext%7Botherwise%7D%20%5Cend%7Bcases%7D)
+   ![\mathcal{H}_t^{r+1} = \begin{cases} g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^r & \text{if } g_t^r > P_\beta(G^r) \\ \mathcal{H}_t^r & \text{otherwise} \end{cases}](https://latex.codecogs.com/png.image?\bg_white\dpi{110}\mathcal{H}_t^{r+1}=\begin{cases}g_t^rf(\mathcal{H}_t^r,\Phi')+\mathcal{H}_t^r&\text{if}g_t^r>P_\beta(G^r)\\\mathcal{H}_t^r&\text{otherwise}\end{cases})
 
    Where $P_\beta(G^r)$ is the $\beta$-percentile threshold over all scores at step $r$.
 
@@ -87,7 +87,7 @@ Token-choice commits each token to a full sequence of recursion blocks from the 
 
 2. The token is assigned to expert $i = \arg\max_j g_t^j$, applying $i$ recursive updates:
 
-   ![\mathcal{H}_t^{r+1} = \begin{cases} g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^1 & \text{if } r = i \\ g_t^r f(\mathcal{H}_t^r, \Phi') & \text{otherwise} \end{cases}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D%20%5Cmathcal%7BH%7D_t%5E%7Br&plus;1%7D%20%3D%20%5Cbegin%7Bcases%7D%20g_t%5Er%20f%28%5Cmathcal%7BH%7D_t%5Er%2C%20%5CPhi%27%29%20&plus;%20%5Cmathcal%7BH%7D_t%5E1%20%26%20%5Ctext%7Bif%20%7D%20r%20%3D%20i%20%5C%5C%20g_t%5Er%20f%28%5Cmathcal%7BH%7D_t%5Er%2C%20%5CPhi%27%29%20%26%20%5Ctext%7Botherwise%7D%20%5Cend%7Bcases%7D)
+   ![\mathcal{H}_t^{r+1} = \begin{cases} g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^1 & \text{if } r = i \\ g_t^r f(\mathcal{H}_t^r, \Phi') & \text{otherwise} \end{cases}](https://latex.codecogs.com/png.image?\bg_white\dpi{110}\mathcal{H}_t^{r+1}=\begin{cases}g_t^rf(\mathcal{H}_t^r,\Phi')+\mathcal{H}_t^1&\text{if}r=i\\g_t^rf(\mathcal{H}_t^r,\Phi')&\text{otherwise}\end{cases})
 
 **Key Features:**
 - Commits to computation path upfront
