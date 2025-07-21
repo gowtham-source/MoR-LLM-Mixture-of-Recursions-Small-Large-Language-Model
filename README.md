@@ -88,8 +88,8 @@ $$\text{KV}_{\text{cache}}[i, j] = \begin{cases}
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/MOR-LLM.git
-cd MOR-LLM
+git clone https://github.com/gowtham-source/MoR-LLM-Mixture-of-Recursions-Small-Large-Language-Model.git
+cd MoR-LLM-Mixture-of-Recursions-Small-Large-Language-Model
 
 # Create environment and install dependencies
 uv venv
@@ -117,9 +117,26 @@ torchrun --nproc_per_node=4 train.py --config configs/medium_llm.yaml
 
 ```bash
 # Interactive generation
-uv run inference.py --checkpoint path/to/checkpoint --interactive
+uv run inference.py --model_path path/to/checkpoint --interactive
 
-# Script-based generation
+# Interactive generation with adaptive recursion
+uv run inference.py --model_path path/to/checkpoint --interactive --recursion_strategy adaptive
+
+# Interactive generation with uniform recursion depth
+uv run inference.py --model_path path/to/checkpoint --interactive --recursion_strategy uniform --recursion_depth 4
+
+# Interactive generation with progressive routing
+uv run inference.py --model_path path/to/checkpoint --interactive --routing_strategy progressive
+
+# LLama Tokenizer
+uv run inference.py --model_path path/to/checkpoint --tokenizer meta-llama/Llama-2-7b-hf
+
+
+# Normal generation - sample
+uv run inference.py --model_path checkpoints/<model_name>.pt --text "Once upon a time" --max_new_tokens 100 --temperature 0.7 --top_p 0.9 --top_k 50 
+
+
+# For testing the code
 uv run examples/quick_start.py
 ```
 
