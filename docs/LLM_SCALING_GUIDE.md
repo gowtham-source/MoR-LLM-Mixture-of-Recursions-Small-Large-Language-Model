@@ -60,7 +60,7 @@ max_recursion_depth: 10
 
 1. **Development**: TinyStories → WikiText-103
 2. **Validation**: OpenWebText (subset)
-3. **Production**: C4 or RedPajama-1T
+3. **Production**: C4 or RedPajama-1T or commonpile (8T)
 
 ## 🖥️ Hardware Requirements
 
@@ -79,6 +79,7 @@ max_recursion_depth: 10
 | **1.3B** | OpenWebText | 4x A100 | ~1 week |
 | **7B** | C4 (subset) | 8x A100 | ~2-4 weeks |
 | **13B** | RedPajama-1T | 8x H100 | ~2-3 months |
+| **20B** | Commonpile (8T) | 8x H100 | ~2-3 months |
 
 ## ⚙️ Configuration Changes
 
