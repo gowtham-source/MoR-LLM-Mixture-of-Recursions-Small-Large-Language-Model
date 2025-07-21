@@ -251,6 +251,8 @@ Due to limited computational resources, I haven't been able to train the model t
 
 **Note:** This repository focuses on providing a faithful implementation of the MoR architecture. Results will vary based on training duration, data quality, and available compute. Full training results will be added in future updates as more resources become available.
 
+-- The diagrams used here are taken from the original paper!
+
 ## Future Work
 
 Several enhancements are planned for future development:
