@@ -53,16 +53,68 @@ $$\text{Parameter Savings} \approx (1 - \frac{1}{d_{max}}) \times 100\%$$
 
 ### 2. Dynamic Routing Mechanisms
 
-MoR implements two routing mechanisms to determine the recursion depth for each token:
+MoR implements two sophisticated routing mechanisms that determine how tokens progress through recursive computation paths:
 
-- **Token-Choice Routing**: Allows each token to decide its own recursion depth.
-- **Expert-Choice Routing**: The model determines which tokens receive more recursive processing.
+#### 2.1 Expert-Choice Routing
 
-The routing mechanism is formulated as:
+In expert-choice routing, each recursion depth acts as an expert that selects its preferred top-k tokens. For $N_r$ recursion steps, we have $N_r$ experts, where Expert $r$ applies the $r^{th}$ recursion step.
+
+At each recursion step $r$:
+1. The router computes a scalar score for each token $t$:
+   $$g_t^r = \mathcal{G}(\theta_r^\top \mathcal{H}_t^r)$$
+   where $\mathcal{G}$ is an activation function (sigmoid/tanh) and $\mathcal{H}_t^r$ is the hidden state at step $r$.
+
+2. The hidden state updates as:
+   $$\mathcal{H}_t^{r+1} = \begin{cases}
+   g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^r & \text{if } g_t^r > P_\beta(G^r) \\
+   \mathcal{H}_t^r & \text{otherwise}
+   \end{cases}$$
+
+   Where $P_\beta(G^r)$ is the $\beta$-percentile threshold over all scores at step $r$.
+
+**Key Features:**
+- Hierarchical filtering: Tokens must be selected at step $r$ to progress to $r+1$
+- Simulates early-exit behavior
+- Prioritizes computation for demanding tokens
+
+#### 2.2 Token-Choice Routing
+
+Token-choice commits each token to a full sequence of recursion blocks from the start:
+
+1. The router computes expert scores using the initial hidden state:
+   $$g_t = \mathcal{G}(\theta_r^\top \mathcal{H}_t^1)$$
+   where $g_t^j$ is the score for expert $j \in \{1,...,N_r\}$
+
+2. The token is assigned to expert $i = \arg\max_j g_t^j$, applying $i$ recursive updates:
+   $$\mathcal{H}_t^{r+1} = \begin{cases}
+   g_t^r f(\mathcal{H}_t^r, \Phi') + \mathcal{H}_t^1 & \text{if } r = i \\
+   g_t^r f(\mathcal{H}_t^r, \Phi') & \text{otherwise}
+   \end{cases}$$
+
+**Key Features:**
+- Commits to computation path upfront
+- More stable training dynamics
+- Simpler routing logic
+
+#### 2.3 Routing Strategy Comparison
+
+| Feature | Expert-Choice | Token-Choice |
+|---------|--------------|--------------|
+| Decision Point | Per recursion step | Initial token processing |
+| Flexibility | High (dynamic per step) | Fixed after assignment |
+| Training Stability | More challenging | More stable |
+| Best For | Variable complexity inputs | Consistent computation paths |
+
+#### 2.4 Routing Probability Formulation
+
+Both strategies use a router network $R$ to compute token-to-expert assignment probabilities:
 
 $$p(d|x_i) = \text{softmax}(R(x_i)_d)$$
 
-where $R$ is the router network and $x_i$ is the token representation.
+Where:
+- $R$ is the trainable router network
+- $x_i$ is the token representation
+- $d$ is the recursion depth/expert index
 
 ### 3. Efficient KV Caching
 
