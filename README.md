@@ -61,9 +61,7 @@ In expert-choice routing, each recursion depth acts as an expert that selects it
 
 At each recursion step $r$:
 1. The router computes a scalar score for each token $t$:
-
-   ![g_t^r = \mathcal{G}(\theta_r^\top \mathcal{H}_t^r)](https://render.githubusercontent.com/render/math?math=g_t%5Er%20%3D%20%5Cmathcal%7BG%7D%28%5Ctheta_r%5E%5Ctop%20%5Cmathcal%7BH%7D_t%5Er%29)
-
+   $$g_t^r = \mathcal{G}(\theta_r^\top \mathcal{H}_t^r)$$
    where $\mathcal{G}$ is an activation function (sigmoid/tanh) and $\mathcal{H}_t^r$ is the hidden state at step $r$.
 
 2. The hidden state updates as:
@@ -83,7 +81,7 @@ Token-choice commits each token to a full sequence of recursion blocks from the 
 
 1. The router computes expert scores using the initial hidden state:
 
-   ![g_t = \mathcal{G}(\theta_r^\top \mathcal{H}_t^1)](https://render.githubusercontent.com/render/math?math=g_t%20%3D%20%5Cmathcal%7BG%7D%28%5Ctheta_r%5E%5Ctop%20%5Cmathcal%7BH%7D_t%5E1%29)
+   $$g_t = \mathcal{G}(\theta_r^\top \mathcal{H}_t^1)$$
 
    where $g_t^j$ is the score for expert $j \in \{1,...,N_r\}$
 
